@@ -1,0 +1,47 @@
+complete vpc creation
+provider "aws" {
+  region = "us-east-1"
+  access_key = "....."
+  secret_key = "..."
+}
+
+resource "aws_vpc" "myvpc" {
+    tags = {
+      Name = "New-VPC"
+    }
+  cidr_block = "10.0.0.0/16"
+}
+
+resource "aws_subnet" "myvpc" {
+    tags = {
+      Name = "my-subnet-micro"
+    }
+  vpc_id = aws_vpc.myvpc.id
+  availability_zone = "us-east-1a"
+  cidr_block = "10.0.0.0/24"
+
+}
+
+resource "aws_internet_gateway" "myvpc" {
+    tags = {
+      Name = "IGV"
+    }
+  vpc_id = aws_vpc.myvpc.id
+}
+
+resource "aws_route_table" "myvpc" {
+    tags = {
+      Name = "Route-table-micro"
+    }
+  vpc_id = aws_vpc.myvpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.myvpc.id
+  }
+}
+
+resource "aws_route_table_association" "myvpc" {
+  subnet_id = aws_subnet.myvpc.id
+  route_table_id = aws_route_table.myvpc.id
+}
